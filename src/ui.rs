@@ -1,8 +1,11 @@
 use std::path::PathBuf;
 
 use iced::{
-    widget::{ button, column, container, row, text, text::Style as TextStyle },
-    Alignment, Border, Color, Element, Length, Padding, Task,
+    widget::{
+        button, column, container, container::Style as ContainerStyle, row,
+        text, text::Style as TextStyle,
+    },
+    Alignment, Border, Color, Element, Length, Padding, Task, Background,
 };
 
 use opener;
@@ -287,6 +290,12 @@ impl Window {
         container(cols)
             .width(Length::Fill)
             .height(Length::Fill)
+            .style(|_| ContainerStyle {
+                background: Some(Background::Color(Color::from_rgb(
+                    0.125, 0.125, 0.125,
+                ))),
+                ..ContainerStyle::default()
+            })
             .align_x(Alignment::Center)
             .align_y(Alignment::Center)
             .into()

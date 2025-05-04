@@ -6,7 +6,7 @@ mod worker;
 mod types;
 
 use iced::{
-    application, window::Settings, Result as IcedResult, Size
+    application, window::Settings, Result as IcedResult, Size, Theme
 };
 
 use ui::Window;
@@ -19,6 +19,7 @@ fn main() -> IcedResult {
             transparent: true,
             ..Settings::default()
         })
+        .theme(|_| Theme::Dark)
         .run()
 }
 
