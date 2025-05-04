@@ -2,6 +2,7 @@ use crate::types::{ FileExt, Day, Month };
 
 use chrono::{ DateTime, Datelike, Local };
 use rust_xlsxwriter::*;
+use native_dialog::DialogBuilder;
 
 #[derive(Debug, Default, Clone)]
 pub struct Writer {
@@ -357,7 +358,15 @@ impl Writer {
             }
         }
 
-        workbook.save("test.xlsx").unwrap();
+        let output_path = DialogBuilder::file()
+            .add_filter("Excel File", &[ ".xlsx" ])
+            .save_single_file()
+            .show()
+            .unwrap();
+
+        if let Some(path) = output_path {
+            workbook.save(path).unwrap();
+        }
     }
 }
 

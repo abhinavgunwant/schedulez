@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use iced::{
-    widget::{ button, column, container, row, text },
-    Alignment, Border, Element, Length, Padding, Task,
+    widget::{ button, column, container, row, text, text::Style as TextStyle },
+    Alignment, Border, Color, Element, Length, Padding, Task,
 };
 
 use opener;
@@ -250,8 +250,7 @@ impl Window {
                             ..Padding::default()
                         }),
 
-                    button(".csv")
-                        .on_press(WindowMessage::Export(FileExt::Xlsx)),
+                    button(".csv (Coming Soon)"),
                 ])
                     .align_x(Alignment::Center)
                     .width(Length::Fill)
@@ -263,7 +262,12 @@ impl Window {
 
             if self.exported {
                 cols = cols.push(
-                    container(text("Export Successful!"))
+                    container(
+                        text("Export Successful!")
+                            .style(|_| TextStyle {
+                                color: Some(Color::from_rgb(0.5, 1.0, 0.5)),
+                            })
+                    )
                         .align_x(Alignment::Center)
                         .width(Length::Fill)
                         .padding(Padding {
