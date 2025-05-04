@@ -3,6 +3,7 @@ mod ui;
 mod reader;
 mod writer;
 mod worker;
+mod types;
 
 use iced::{
     application, window::Settings, Result as IcedResult, Size

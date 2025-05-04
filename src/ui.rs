@@ -9,7 +9,7 @@ use opener;
 use chrono::Local;
 use native_dialog::DialogBuilder;
 
-use crate::{ reader::Reader, worker };
+use crate::{ types::FileExt, reader::Reader, writer::Writer, worker };
 
 #[derive(Default, PartialEq)]
 pub enum ScreenState {
@@ -24,8 +24,10 @@ pub enum ScreenState {
 pub struct Window {
     pub screen_state: ScreenState,
     pub reader: Reader,
+    pub writer: Writer,
     pub path: Option<PathBuf>,
     pub file_name: String,
+    pub exported: bool,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -33,7 +35,15 @@ pub enum WindowMessage {
     #[default]
     None,
     ChooseFile,
+
+    /// Generate the schedule
     Generate,
+
+    /// 
+    Generating,
+
+    /// Export to file
+    Export(FileExt),
     GoToGitHub,
     Reset,
 }
@@ -44,6 +54,7 @@ impl Window {
     fn reset(&mut self) {
         self.screen_state = ScreenState::Start;
         self.reader = Reader::default();
+        self.writer = Writer::default();
         self.path = None;
         self.file_name = String::default();
     }
@@ -78,8 +89,28 @@ impl Window {
             }
 
             WindowMessage::Generate => {
-                let output = worker::process(&self.reader.elements, Local::now(), 10);
+                self.screen_state = ScreenState::ScheduleGenerating;
+
+                Task::done(WindowMessage::Generating)
+            },
+
+            WindowMessage::Generating => {
+                let now = Local::now();
+                let output = worker::process(&self.reader.elements, now, 10);
+
+                self.writer.init(10, now, &output);
+
                 println!("{:?}", output);
+
+                self.screen_state = ScreenState::ScheduleGenerated;
+
+                Task::none()
+            }
+
+            WindowMessage::Export(file) => {
+                self.writer.export(file);
+
+                self.exported = true;
                 Task::none()
             },
 
@@ -177,6 +208,70 @@ impl Window {
                         ..Padding::default()
                     })
             );
+
+            cols = cols.push(
+                container(button("Reset").on_press(WindowMessage::Reset))
+                    .align_x(Alignment::Center)
+                    .width(Length::Fill)
+            );
+        }
+
+        if self.screen_state == ScreenState::ScheduleGenerating {
+            cols = cols.push(
+                container(button("Generating Schedule"))
+                    .align_x(Alignment::Center)
+                    .width(Length::Fill)
+                    .padding(Padding {
+                        bottom: 8.0,
+                        ..Padding::default()
+                    })
+            );
+        }
+
+        if self.screen_state == ScreenState::ScheduleGenerated {
+            cols = cols.push(
+                container(text("Export as:"))
+                    .align_x(Alignment::Center)
+                    .width(Length::Fill)
+                    .padding(Padding {
+                        bottom: 8.0,
+                        ..Padding::default()
+                    })
+            );
+
+            cols = cols.push(
+                container(row![
+                    container(
+                        button(".xlsx")
+                            .on_press(WindowMessage::Export(FileExt::Xlsx))
+                    )
+                        .padding(Padding {
+                            right: 8.0,
+                            ..Padding::default()
+                        }),
+
+                    button(".csv")
+                        .on_press(WindowMessage::Export(FileExt::Xlsx)),
+                ])
+                    .align_x(Alignment::Center)
+                    .width(Length::Fill)
+                    .padding(Padding {
+                        bottom: 8.0,
+                        ..Padding::default()
+                    })
+            );
+
+            if self.exported {
+                cols = cols.push(
+                    container(text("Export Successful!"))
+                        .align_x(Alignment::Center)
+                        .width(Length::Fill)
+                        .padding(Padding {
+                            bottom: 8.0,
+                            ..Padding::default()
+                        })
+                );
+            }
 
             cols = cols.push(
                 container(button("Reset").on_press(WindowMessage::Reset))

@@ -2,11 +2,7 @@ use std::path::Path;
 
 use calamine::{ Reader as CalamineReader, open_workbook, Xlsx, Data };
 
-#[derive(Debug, Default, Clone)]
-pub enum Day {
-    #[default]
-    Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday,
-}
+use crate::types::Day;
 
 #[derive(Debug, Default, Clone)]
 pub struct ScheduledElement {
@@ -117,37 +113,6 @@ impl Reader {
             }
 
             break;
-        }
-    }
-}
-
-impl Day {
-    pub fn from(day: &str) -> Self {
-        let day_uc = day.to_uppercase();
-        let day_str = day_uc.as_str();
-
-        match day_str {
-            "SUNDAY" | "SUN" | "SU" => Self::Sunday,
-            "MONDAY" | "MON" | "MO" | "M" => Self::Monday,
-            "TUESDAY" | "TUE" | "TU" => Self::Tuesday,
-            "WEDNESDAY" | "WED" | "WE" | "W" => Self::Wednesday,
-            "THURSDAY" | "THU" | "TH" => Self::Thursday,
-            "FRIDAY" | "FRI" | "FR" | "F" => Self::Friday,
-            "SATURDAY" | "SAT" | "SA" => Self::Saturday,
-
-            _ => Self::Sunday,
-        }
-    }
-
-    pub fn to_u32(&self) -> u32 {
-        match self {
-            Day::Sunday => 0,
-            Day::Monday => 1,
-            Day::Tuesday => 2,
-            Day::Wednesday => 3,
-            Day::Thursday => 4,
-            Day::Friday => 5,
-            Day::Saturday => 6,
         }
     }
 }

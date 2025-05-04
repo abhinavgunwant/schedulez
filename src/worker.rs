@@ -2,7 +2,7 @@ use chrono::{DateTime, Datelike, Local};
 
 use crate::reader::ScheduledElement;
 
-use std::collections::HashMap;
+use std::collections::HashSet;
 use rand::{ rng, seq::SliceRandom };
 
 /// Whether scheduling this element should be avoided.
@@ -59,8 +59,8 @@ pub fn process(
 ) -> Vec<Vec<Vec<String>>> {
     let mut month_vec: Vec<Vec<Vec<String>>> = Vec::with_capacity(5);
 
+    // randomize the list of elements
     let mut elem_random = elements.clone();
-
     elem_random.shuffle(&mut rng());
 
     let m: u32 = month.month();
@@ -83,6 +83,9 @@ pub fn process(
         debts.push(0);
     }
 
+    // Set containing each day's schedule
+    let mut day_set: HashSet<String> = HashSet::with_capacity(7);
+
     for i in 0..5 {
         let mut week_vec: Vec<Vec<String>> = Vec::with_capacity(7);
 
@@ -100,15 +103,14 @@ pub fn process(
                 continue;
             }
 
-            let mut day_vec: Vec<String>;
-
             if elem_random.len() < win_len {
-                day_vec = elem_random.iter()
-                    .filter(|elem| avoid(elem, j))
-                    .map(|elem| elem.text.clone())
-                    .collect();
+                week_vec.push(
+                    elem_random.iter()
+                        .filter(|elem| avoid(elem, j))
+                        .map(|elem| elem.text.clone())
+                        .collect()
+                );
             } else {
-                day_vec = Vec::with_capacity(elem_random.len());
                 let mut index: usize = 0;
 
                 // while day_vec.len() < win_len && !flag && index != window_offset {
@@ -118,16 +120,16 @@ pub fn process(
                     if avoid(&elem_random[abs_index], j) {
                         debts[abs_index] += 1;
                     } else {
-                        day_vec.push(elem_random[abs_index].text.clone());
+                        day_set.insert(elem_random[abs_index].text.clone());
                     }
 
                     index = index + 1;
                 }
 
-                while day_vec.len() < win_len {
+                while day_set.len() < win_len {
                     match max_debt_index(&elem_random, &debts, j) {
                         Some(max_debt) => {
-                            day_vec.push(elem_random[max_debt].text.clone());
+                            day_set.insert(elem_random[max_debt].text.clone());
                             debts[max_debt] -= 1;
                         }
 
@@ -135,23 +137,24 @@ pub fn process(
                     }
                 }
 
-                while day_vec.len() < win_len
+                while day_set.len() < win_len
                     && index != window_offset as usize
                 {
-                    let relative_index = (index + window_offset as usize) % elem_random.len();
+                    let abs_index = (index + window_offset as usize) % elem_random.len();
 
-                    if !avoid(&elem_random[relative_index], j) {
-                        day_vec.push(elem_random[relative_index].text.clone());
-                        debts[relative_index] -= 1;
+                    if !avoid(&elem_random[abs_index], j) {
+                        day_set.insert(elem_random[abs_index].text.clone());
+                        debts[abs_index] -= 1;
                     }
 
                     index = index + 1;
                 }
 
                 window_offset = (window_offset + 1) % win_len as u32;
+
+                week_vec.push(day_set.drain().collect());
             }
 
-            week_vec.push(day_vec);
             total_day_count += 1;
 
             if total_day_count == month.num_days_in_month() {
