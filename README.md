@@ -1,15 +1,17 @@
 # schedulEZ
 
-Easy Scheduling.
+Creates schedules and shift calendars as excel files in a few clicks.
 
-Schedule shifts and various tasks in a few clicks.
+Work in progress!
 
-## How does it work?
+## Usage Guide
 
 ### Pre-requisite
-Download the appropriate binary from the [releases](https://github.com/abhinavgunwant/schedulez/releases) page. Or:
+Download the appropriate binary from the [releases](https://github.com/abhinavgunwant/schedulez/releases) page.
 
-- [Windows Binary](https://github.com/abhinavgunwant/schedulez/releases/download/v0.1.0/schedulez-win-x64.zip)
+Or:
+
+- [Windows 64-bit Executable](https://github.com/abhinavgunwant/schedulez/releases/download/v0.1.0/schedulez-win-x64.zip)
 
 ### Steps
 - Create an input excel file. It just needs to have these three columns with any number of rows:
